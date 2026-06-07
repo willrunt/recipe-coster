@@ -1,0 +1,6 @@
+{
+  "name": "recipe-coster",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test" }
+}
