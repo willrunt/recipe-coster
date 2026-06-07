@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>A — Clean Utility</title>
+<script src="data.js"></script>
+<style>
+  :root{
+    --bg:#ffffff; --ink:#16181c; --muted:#6b7280;
+    --line:#eceef1; --accent:#0f7b54; --accent-soft:#e7f4ee; --buy:#b4540a;
+    --ease-out:cubic-bezier(0.23,1,0.32,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:#d9dde2;color:var(--ink);display:flex;justify-content:center;padding:24px}
+  .phone{width:390px;height:800px;background:var(--bg);border-radius:38px;overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,.28);display:flex;flex-direction:column;position:relative}
+  header{padding:54px 20px 14px;border-bottom:1px solid var(--line);background:var(--bg);z-index:2}
+  h1{font-size:24px;font-weight:680;letter-spacing:-.02em}
+  header p{color:var(--muted);font-size:13px;margin-top:2px}
+  main{flex:1;overflow-y:auto}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:15px 20px;border-bottom:1px solid var(--line);cursor:pointer;
+    transition:background 120ms var(--ease-out)}
+  .row:active{background:#f6f7f9}
+  .row .name{font-weight:560;font-size:15.5px;letter-spacing:-.01em}
+  .row .sub{color:var(--muted);font-size:12.5px;margin-top:3px}
+  .price{text-align:right;white-space:nowrap}
+  .price .total{font-weight:680;font-size:16px;font-variant-numeric:tabular-nums}
+  .price .buy{display:inline-block;margin-top:4px;font-size:11.5px;font-weight:600;
+    color:var(--buy);background:#fbf0e6;padding:2px 7px;border-radius:99px}
+  nav{display:flex;border-top:1px solid var(--line);background:var(--bg)}
+  nav button{flex:1;border:0;background:none;padding:13px 0 26px;font:inherit;font-size:12px;
+    color:var(--muted);font-weight:560;cursor:pointer}
+  nav button.on{color:var(--accent)}
+  /* detail */
+  .detail{position:absolute;inset:0;background:var(--bg);transform:translateX(100%);
+    transition:transform 260ms var(--ease-out);display:flex;flex-direction:column}
+  .detail.show{transform:translateX(0)}
+  .dhead{padding:54px 20px 16px;border-bottom:1px solid var(--line)}
+  .back{border:0;background:none;color:var(--accent);font:inherit;font-weight:600;
+    font-size:14px;margin-bottom:12px;cursor:pointer;padding:0}
+  .dhead h2{font-size:21px;font-weight:680;letter-spacing:-.02em;line-height:1.2}
+  .summary{display:flex;gap:18px;margin-top:14px}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .stat .v{font-weight:700;font-size:18px;font-variant-numeric:tabular-nums;margin-top:2px}
+  .stat .v.buy{color:var(--buy)}
+  .lines{flex:1;overflow-y:auto;padding:6px 0}
+  .li{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;
+    border-bottom:1px solid var(--line);font-size:14.5px}
+  .li.owned .lname{text-decoration:line-through;color:var(--muted)}
+  .lname .q{color:var(--muted);font-size:12.5px;margin-left:6px}
+  .lcost{font-variant-numeric:tabular-nums;font-weight:560}
+  .tag{font-size:10.5px;color:var(--accent);background:var(--accent-soft);
+    padding:2px 7px;border-radius:99px;font-weight:600;margin-left:8px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <header><h1>Recipes</h1><p>39 recipes · avg $16.27</p></header>
+  <main id="list"></main>
+  <nav><button class="on">Recipes</button><button>Pantry</button><button>↻ Refresh</button></nav>
+
+  <section class="detail" id="detail">
+    <div class="dhead">
+      <button class="back" onclick="hide()">← Recipes</button>
+      <h2 id="dname"></h2>
+      <div class="summary">
+        <div class="stat"><div class="k">Total</div><div class="v" id="dtotal"></div></div>
+        <div class="stat"><div class="k">Per serve</div><div class="v" id="dserve"></div></div>
+        <div class="stat"><div class="k">To buy</div><div class="v buy" id="dbuy"></div></div>
+      </div>
+    </div>
+    <div class="lines" id="dlines"></div>
+  </section>
+</div>
+<script>
+  const money=n=>'$'+n.toFixed(2);
+  const list=document.getElementById('list');
+  RECIPES.forEach(r=>{
+    const el=document.createElement('div');el.className='row';
+    el.innerHTML=`<div><div class="name">${r.name}</div>
+      <div class="sub">${r.lines.length} ingredients · ${r.serves} serves</div></div>
+      <div class="price"><div class="total">${money(r.total)}</div>
+      ${r.toBuy<r.total?`<div class="buy">${money(r.toBuy)} to buy</div>`:''}</div>`;
+    el.onclick=()=>show(r);list.appendChild(el);
+  });
+  function show(r){
+    dname.textContent=r.name;dtotal.textContent=money(r.total);
+    dserve.textContent=money(r.total/r.serves);dbuy.textContent=money(r.toBuy);
+    dlines.innerHTML=r.lines.map(l=>`<div class="li ${l.pantry?'owned':''}">
+      <div class="lname">${l.name}<span class="q">${l.qty}</span>${l.pantry?'<span class="tag">pantry</span>':''}</div>
+      <div class="lcost">${l.pantry?'—':money(l.cost)}</div></div>`).join('');
+    detail.classList.add('show');
+  }
+  function hide(){detail.classList.remove('show')}
+</script>
+</body>
+</html>

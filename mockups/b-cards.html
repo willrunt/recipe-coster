@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>B — Card Grid</title>
+<script src="data.js"></script>
+<style>
+  :root{
+    --bg:#f4f5f7; --card:#fff; --ink:#1b1d22; --muted:#7a8190;
+    --accent:#3b5bdb; --buy:#e8590c; --green:#2f9e44;
+    --ease-out:cubic-bezier(0.23,1,0.32,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:#cdd1d8;color:var(--ink);display:flex;justify-content:center;padding:24px}
+  .phone{width:390px;height:800px;background:var(--bg);border-radius:38px;overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,.28);display:flex;flex-direction:column;position:relative}
+  header{padding:54px 20px 16px}
+  h1{font-size:27px;font-weight:740;letter-spacing:-.03em}
+  header p{color:var(--muted);font-size:13.5px;margin-top:3px}
+  main{flex:1;overflow-y:auto;padding:4px 16px 20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  .card{background:var(--card);border-radius:20px;padding:15px;cursor:pointer;
+    box-shadow:0 1px 3px rgba(20,22,30,.07),0 6px 16px rgba(20,22,30,.04);
+    display:flex;flex-direction:column;gap:10px;min-height:148px;
+    transition:transform 160ms var(--ease-out),box-shadow 160ms var(--ease-out)}
+  .card:active{transform:scale(.97)}
+  .badge{align-self:flex-start;font-size:23px;font-weight:760;letter-spacing:-.03em;
+    font-variant-numeric:tabular-nums;line-height:1}
+  .cname{font-size:14px;font-weight:600;letter-spacing:-.01em;margin-top:auto}
+  .meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .pill{font-size:10.5px;font-weight:650;padding:3px 8px;border-radius:99px}
+  .pill.buy{color:var(--buy);background:#fde9d8}
+  .pill.serve{color:var(--muted);background:#eef0f3}
+  nav{display:flex;border-top:1px solid #e4e7eb;background:var(--bg)}
+  nav button{flex:1;border:0;background:none;padding:13px 0 26px;font:inherit;font-size:12px;
+    color:var(--muted);font-weight:600;cursor:pointer}
+  nav button.on{color:var(--accent)}
+  .detail{position:absolute;inset:0;background:var(--bg);transform:translateY(101%);
+    transition:transform 300ms var(--ease-out);display:flex;flex-direction:column}
+  .detail.show{transform:translateY(0)}
+  .dhead{padding:30px 20px 18px;background:var(--card);border-bottom:1px solid #e8eaee}
+  .grab{width:38px;height:5px;border-radius:99px;background:#d3d7dd;margin:0 auto 20px}
+  .dhead h2{font-size:22px;font-weight:740;letter-spacing:-.025em;line-height:1.15}
+  .stats{display:flex;gap:10px;margin-top:16px}
+  .stat{flex:1;background:var(--bg);border-radius:14px;padding:11px 12px}
+  .stat .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  .stat .v{font-size:18px;font-weight:740;font-variant-numeric:tabular-nums;margin-top:3px}
+  .stat .v.buy{color:var(--buy)}
+  .lines{flex:1;overflow-y:auto;padding:14px 16px}
+  .li{display:flex;justify-content:space-between;align-items:center;background:var(--card);
+    border-radius:13px;padding:13px 15px;margin-bottom:9px;font-size:14.5px}
+  .li.owned{opacity:.62}
+  .li.owned .lname{text-decoration:line-through}
+  .q{color:var(--muted);font-size:12.5px;margin-left:7px}
+  .lcost{font-weight:650;font-variant-numeric:tabular-nums}
+  .check{color:var(--green);font-size:12px;font-weight:650;margin-left:7px}
+  .back{position:absolute;top:30px;right:18px;border:0;background:#eceef1;color:var(--ink);
+    width:32px;height:32px;border-radius:99px;font-size:17px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="phone">
+  <header><h1>Kitchen</h1><p>What's it costing us · 39 recipes</p></header>
+  <main><div class="grid" id="grid"></div></main>
+  <nav><button class="on">Recipes</button><button>Pantry</button><button>↻</button></nav>
+
+  <section class="detail" id="detail">
+    <div class="dhead">
+      <div class="grab"></div>
+      <button class="back" onclick="hide()">✕</button>
+      <h2 id="dname"></h2>
+      <div class="stats">
+        <div class="stat"><div class="k">Total</div><div class="v" id="dtotal"></div></div>
+        <div class="stat"><div class="k">/ serve</div><div class="v" id="dserve"></div></div>
+        <div class="stat"><div class="k">To buy</div><div class="v buy" id="dbuy"></div></div>
+      </div>
+    </div>
+    <div class="lines" id="dlines"></div>
+  </section>
+</div>
+<script>
+  const money=n=>'$'+n.toFixed(2);
+  const grid=document.getElementById('grid');
+  RECIPES.forEach(r=>{
+    const c=document.createElement('div');c.className='card';
+    c.innerHTML=`<div class="badge">${money(r.total)}</div>
+      <div class="cname">${r.name}</div>
+      <div class="meta"><span class="pill serve">${r.serves} serves</span>
+      ${r.toBuy<r.total?`<span class="pill buy">${money(r.toBuy)} to buy</span>`:''}</div>`;
+    c.onclick=()=>show(r);grid.appendChild(c);
+  });
+  function show(r){
+    dname.textContent=r.name;dtotal.textContent=money(r.total);
+    dserve.textContent=money(r.total/r.serves);dbuy.textContent=money(r.toBuy);
+    dlines.innerHTML=r.lines.map(l=>`<div class="li ${l.pantry?'owned':''}">
+      <div><span class="lname">${l.name}</span><span class="q">${l.qty}</span>${l.pantry?'<span class="check">✓ have it</span>':''}</div>
+      <div class="lcost">${l.pantry?'—':money(l.cost)}</div></div>`).join('');
+    detail.classList.add('show');
+  }
+  function hide(){detail.classList.remove('show')}
+</script>
+</body>
+</html>
