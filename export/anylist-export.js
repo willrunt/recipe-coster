@@ -1,9 +1,27 @@
 const AnyList = require('anylist');
 const fs = require('fs');
+const readline = require('readline');
+
+function ask(question, { hidden = false } = {}) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    if (hidden) {
+      rl._writeToOutput = (s) => {
+        rl.output.write(s.includes(question) ? question : '*');
+      };
+    }
+    rl.question(question, (answer) => {
+      rl.close();
+      if (hidden) process.stdout.write('\n');
+      resolve(answer.trim());
+    });
+  });
+}
 
 async function main() {
-  const { ANYLIST_EMAIL: email, ANYLIST_PASSWORD: password } = process.env;
-  if (!email || !password) throw new Error('Set ANYLIST_EMAIL and ANYLIST_PASSWORD env vars');
+  const email = process.env.ANYLIST_EMAIL || (await ask('AnyList email: '));
+  const password = process.env.ANYLIST_PASSWORD || (await ask('AnyList password: ', { hidden: true }));
+  if (!email || !password) throw new Error('Email and password are required');
 
   const client = new AnyList({ email, password });
   await client.login();
