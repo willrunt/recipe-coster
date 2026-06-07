@@ -388,3 +388,10 @@ Generated from `raw-recipes.json` (Task 3 normalisation). Review the estimates b
 - "Cabbage" → est. 150g cabbage (qty_status=estimate)
 - "Tonkatsu sauce" → est. 60ml tonkatsu sauce (qty_status=estimate)
 
+
+## Computed-cost outliers (review these first)
+
+Auto-flagged after pricing — costs that look wrong, likely bad quantity parse or price:
+
+- **Vanilla Orange Blossom Syrup → ~$110.** Driven by saffron "12 each" @ $8/each = $96. AnyList raw qty parsed as 12 units; saffron is sold in grams/threads. Fix: correct saffron quantity (likely a pinch ≈ 0.1g) and price saffron per gram, or mark saffron in_pantry.
+- Potato And Leek Soup (~$28) and Creamy Udon (~$28) are the next dearest — sanity-check their estimated quantities.
