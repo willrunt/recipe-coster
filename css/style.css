@@ -1,12 +1,17 @@
-/* Recipe Coster — Direction C "Dark Bench" v2 (08/06/2026).
-   Warmer, lighter charcoal with more bg/card contrast, sage-green accent,
-   cost-scaled colour (cheap=sage → dear=coral). Mobile-first. */
+/* Recipe Coster — v3 "Sage Bench" (08/06/2026).
+   Olive-sage background, cream cards with dark ink (cookbook look),
+   Belleza display headings, cost-scaled colour. Mobile-first. */
 :root{
-  --bg:#191c22; --panel:#242932; --panel2:#2c323d; --ink:#f1f4f7; --muted:#959cab;
-  --accent:#8cc6a0; --accent-dim:rgba(140,198,160,.14);
-  --buy:#e8916a; --buy-dim:rgba(232,145,106,.15);
-  --green:#8cc6a0; --line:#333a46;
-  --cheap:#8cc6a0; --mid:#e7c168; --dear:#e8916a;  /* cost scale */
+  --bg:#758467;                         /* olive sage — body/header/nav/detail backdrop */
+  --on-bg:#f8f7f0;                       /* cream text sitting directly on the green */
+  --on-bg-dim:rgba(248,247,240,.74);
+  --panel:#f4f2ea; --panel2:#eae7db;     /* cream cards */
+  --ink:#2b2f25; --muted:#6f7568; --line:#dcd9cb;
+  --accent:#3f6b44; --accent-dim:rgba(63,107,68,.12);
+  --buy:#b85d34; --buy-dim:rgba(184,93,52,.14);
+  --green:#3f6b44;
+  --cheap:#4a7a4e; --mid:#9a7320; --dear:#bb5630;  /* cost scale (legible on cream) */
+  --heading:'Belleza',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --ease-out:cubic-bezier(0.23,1,0.32,1);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -20,10 +25,10 @@ body{
 .hidden{display:none !important}
 
 header{padding:18px 20px 12px;flex-shrink:0}
-h1{font-size:24px;font-weight:720;letter-spacing:-.02em}
-header p{color:var(--muted);font-size:13px;margin-top:3px}
-.status{margin-top:8px;font-size:12px;font-weight:600;color:var(--accent);
-  background:var(--accent-dim);padding:5px 10px;border-radius:99px;display:inline-block}
+h1{font-family:var(--heading);font-size:30px;font-weight:400;letter-spacing:.01em;color:var(--on-bg)}
+header p{color:var(--on-bg-dim);font-size:13px;margin-top:2px}
+.status{margin-top:8px;font-size:12px;font-weight:600;color:var(--on-bg);
+  background:rgba(248,247,240,.18);padding:5px 10px;border-radius:99px;display:inline-block}
 
 main{flex:1;overflow-y:auto;padding:4px 14px 16px;-webkit-overflow-scrolling:touch}
 
@@ -58,30 +63,30 @@ main{flex:1;overflow-y:auto;padding:4px 14px 16px;-webkit-overflow-scrolling:tou
   font-size:14.5px;cursor:pointer}
 .pantry-row input{width:22px;height:22px;accent-color:var(--accent);flex-shrink:0}
 .pantry-row.on{color:var(--green)}
-#view-pantry h2{font-size:18px;font-weight:680;margin:6px 4px 14px}
+#view-pantry h2{font-family:var(--heading);font-size:22px;font-weight:400;margin:6px 4px 14px;color:var(--on-bg)}
 
-nav{display:flex;border-top:1px solid var(--line);background:var(--bg);flex-shrink:0;
+nav{display:flex;border-top:1px solid rgba(248,247,240,.18);background:var(--bg);flex-shrink:0;
   padding-bottom:env(safe-area-inset-bottom)}
 nav button{flex:1;border:0;background:none;padding:13px 0;font:inherit;font-size:12px;
-  color:var(--muted);font-weight:600;cursor:pointer}
-nav button.on{color:var(--accent)}
+  color:var(--on-bg-dim);font-weight:600;cursor:pointer}
+nav button.on{color:var(--on-bg)}
 
 /* detail overlay */
 .detail{position:fixed;inset:0;background:var(--bg);transform:translateX(100%);
   transition:transform 260ms var(--ease-out);display:flex;flex-direction:column;z-index:10;
   padding-top:env(safe-area-inset-top)}
 .detail.show{transform:translateX(0)}
-.dhead{padding:18px 20px 18px;border-bottom:1px solid var(--line);flex-shrink:0}
-.back{border:0;background:none;color:var(--accent);font:inherit;font-weight:600;
+.dhead{padding:18px 20px 18px;border-bottom:1px solid rgba(248,247,240,.18);flex-shrink:0}
+.back{border:0;background:none;color:var(--on-bg);font:inherit;font-weight:600;
   font-size:14px;margin-bottom:14px;cursor:pointer;padding:0}
-.dhead h2{font-size:21px;font-weight:720;letter-spacing:-.02em;line-height:1.18}
+.dhead h2{font-family:var(--heading);font-size:26px;font-weight:400;letter-spacing:.01em;line-height:1.2;color:var(--on-bg)}
 .stats{display:flex;gap:10px;margin-top:16px}
 .stat{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
 .stat .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
 .stat .v{font-size:18px;font-weight:720;font-variant-numeric:tabular-nums;margin-top:3px}
 .stat .v.acc{color:var(--accent)}
 .stat .v.buy{color:var(--buy)}
-.warn{margin-top:14px;font-size:12.5px;color:var(--buy)}
+.warn{margin-top:14px;font-size:12.5px;color:#f2d3c4}
 
 .lines{flex:1;overflow-y:auto;padding:12px 14px;-webkit-overflow-scrolling:touch}
 .li{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;
