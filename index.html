@@ -18,7 +18,19 @@
   </header>
 
   <main>
-    <section id="view-recipes" class="view"></section>
+    <section id="view-recipes" class="view">
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search recipes…" autocomplete="off" />
+        <select id="sort">
+          <option value="default">Sheet order</option>
+          <option value="cost-asc">Cost ↑</option>
+          <option value="cost-desc">Cost ↓</option>
+          <option value="buy-desc">To buy ↓</option>
+          <option value="name">Name A–Z</option>
+        </select>
+      </div>
+      <div id="recipe-list"></div>
+    </section>
     <section id="view-pantry" class="view hidden"></section>
   </main>
 

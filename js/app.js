@@ -28,12 +28,41 @@ function showView(name) {
   }
 }
 
+let searchTerm = '';
+let sortMode = 'default';
+
+function costClass(total) {
+  if (total < 10) return 'cheap';
+  if (total <= 20) return 'mid';
+  return 'dear';
+}
+
 function renderRecipes() {
   const byId = ingredientsById();
-  const el = $('#view-recipes');
+  const el = $('#recipe-list');
   el.innerHTML = '';
-  for (const r of data.recipes) {
-    const c = recipeCost(r, linesFor(r.id), byId);
+
+  let rows = data.recipes.map((r) => ({ r, c: recipeCost(r, linesFor(r.id), byId) }));
+
+  if (searchTerm) {
+    const q = searchTerm.toLowerCase();
+    rows = rows.filter(({ r }) => String(r.name).toLowerCase().includes(q));
+  }
+
+  const sorters = {
+    'cost-asc': (a, b) => a.c.total - b.c.total,
+    'cost-desc': (a, b) => b.c.total - a.c.total,
+    'buy-desc': (a, b) => b.c.toBuy - a.c.toBuy,
+    name: (a, b) => String(a.r.name).localeCompare(String(b.r.name)),
+  };
+  if (sorters[sortMode]) rows.sort(sorters[sortMode]);
+
+  if (!rows.length) {
+    el.innerHTML = '<p class="empty">No recipes match.</p>';
+    return;
+  }
+
+  for (const { r, c } of rows) {
     const row = document.createElement('button');
     row.className = 'recipe-row';
     row.innerHTML = `
@@ -42,7 +71,7 @@ function renderRecipes() {
         <span class="sub">${linesFor(r.id).length} ingredients${r.servings ? ' · ' + r.servings + ' serves' : ''}</span>
       </span>
       <span class="price">
-        <span class="total">${aud(c.total)}</span>
+        <span class="total ${costClass(c.total)}">${aud(c.total)}</span>
         ${c.toBuy < c.total ? `<span class="to-buy">${aud(c.toBuy)} to buy</span>` : ''}
       </span>`;
     row.addEventListener('click', () => renderDetail(r));
@@ -148,6 +177,8 @@ for (const b of document.querySelectorAll('nav button[data-view]')) {
 }
 $('#refresh').addEventListener('click', () => load({ refresh: true }));
 $('#back').addEventListener('click', hideDetail);
+$('#search').addEventListener('input', (e) => { searchTerm = e.target.value; renderRecipes(); });
+$('#sort').addEventListener('change', (e) => { sortMode = e.target.value; renderRecipes(); });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 load();
