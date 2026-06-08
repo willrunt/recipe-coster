@@ -97,6 +97,15 @@ nav button.on{color:var(--on-bg)}
 .li .lcost{font-weight:650;font-variant-numeric:tabular-nums;color:var(--accent);white-space:nowrap}
 .li .check{color:var(--green);font-size:12px;font-weight:650;margin-left:7px}
 
+/* Belleza ships a SINGLE 400 weight. Android Chrome falls back to a system
+   font for any weight it can't match (600/800), so force 400 everywhere and
+   carry emphasis through size + colour instead of weight. */
+body, h1, .dhead h2, #view-pantry h2,
+.recipe-row .name, .recipe-row .total, .recipe-row .to-buy, .recipe-row .sub,
+nav button, .status, .stat .v, .stat .k,
+.li, .li .lcost, .li .check, .li .q,
+#search, #sort, .empty, .warn { font-weight: 400; font-synthesis: none; }
+
 @media (prefers-reduced-motion: reduce){
   .recipe-row,.detail{transition:none}
 }
