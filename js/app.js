@@ -72,7 +72,7 @@ function renderRecipes() {
       </span>
       <span class="price">
         <span class="total ${costClass(c.total)}">${aud(c.total)}</span>
-        ${c.toBuy < c.total ? `<span class="to-buy">${aud(c.toBuy)} to buy</span>` : ''}
+        ${c.toBuy > 0 ? `<span class="to-buy">${aud(c.toBuy)} to buy</span>` : ''}
       </span>`;
     row.addEventListener('click', () => renderDetail(r));
     el.appendChild(row);
