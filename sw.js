@@ -1,4 +1,4 @@
-const CACHE = 'recipe-coster-v5';
+const CACHE = 'recipe-coster-v6';
 const ASSETS = [
   './', './index.html', './css/style.css', './manifest.json',
   './js/app.js', './js/api.js', './js/costs.js', './js/config.js',

@@ -1,5 +1,5 @@
 import { fetchData, cachedData, setPantry } from './api.js';
-import { recipeCost, lineCost, isInPantry } from './costs.js';
+import { recipeCost, packCost, isInPantry } from './costs.js';
 
 let data = null;
 
@@ -93,13 +93,13 @@ function renderDetail(recipe) {
   ul.innerHTML = '';
   for (const line of lines) {
     const ing = byId[line.ingredient_id];
-    const cost = lineCost(line, ing);
+    const buy = packCost(ing); // whole-pack buy price (matches the "To buy" total)
     const owned = isInPantry(ing);
     const li = document.createElement('div');
     li.className = 'li' + (owned ? ' owned' : '');
     li.innerHTML = `
       <span><span class="lname">${ing ? ing.name : '?'}</span><span class="q">${line.quantity} ${line.unit}</span>${owned ? '<span class="check">✓ pantry</span>' : ''}</span>
-      <span class="lcost">${owned ? '—' : cost === null ? 'unpriced' : aud(cost)}</span>`;
+      <span class="lcost">${owned ? '—' : buy === null ? 'unpriced' : aud(buy)}</span>`;
     ul.appendChild(li);
   }
   $('#detail').classList.add('show');
