@@ -45,3 +45,56 @@ function tabToObjects(ss, name) {
 function json(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
+
+// ---------------------------------------------------------------------------
+// ONE-TIME maintenance (09/06/2026): delete 6 recipes, their RecipeIngredients
+// rows, and any ingredient used ONLY by those recipes. Run from the editor:
+// select cleanupRecipes → Run. Re-running is safe (already-gone names are skipped).
+// ---------------------------------------------------------------------------
+function cleanupRecipes() {
+  const NAMES = [
+    'Marry Me Tofu', 'Breakfast Muffins', 'Rice Bowls Don',
+    'Vanilla Orange Blossom Syrup', 'Sandwich', 'Kastu sando',
+  ];
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const recipes = tabToObjects(ss, 'Recipes');
+  const ri = tabToObjects(ss, 'RecipeIngredients');
+
+  const delRecipeIds = new Set(
+    recipes.filter((r) => NAMES.indexOf(r.name) !== -1).map((r) => String(r.id))
+  );
+
+  // ingredients used only by the deleted recipes = orphans
+  const bySurvivor = new Set();
+  const byDeleted = new Set();
+  ri.forEach((l) => {
+    (delRecipeIds.has(String(l.recipe_id)) ? byDeleted : bySurvivor).add(String(l.ingredient_id));
+  });
+  const orphanIds = new Set([...byDeleted].filter((id) => !bySurvivor.has(id)));
+
+  const removed = {
+    recipes: deleteRowsWhere(ss, 'Recipes', 'id', (v) => delRecipeIds.has(String(v))),
+    recipeIngredients: deleteRowsWhere(ss, 'RecipeIngredients', 'recipe_id', (v) => delRecipeIds.has(String(v))),
+    ingredients: deleteRowsWhere(ss, 'Ingredients', 'id', (v) => orphanIds.has(String(v))),
+  };
+  Logger.log('Deleted ' + JSON.stringify(removed));
+  return removed;
+}
+
+// Delete every data row in a tab whose value in `colName` passes `match`.
+// Walks bottom-up so row indices don't shift during deletion.
+function deleteRowsWhere(ss, tabName, colName, match) {
+  const sheet = ss.getSheetByName(tabName);
+  const data = sheet.getDataRange().getValues();
+  const col = data[0].indexOf(colName);
+  if (col === -1) throw new Error(tabName + ' has no ' + colName + ' column');
+  let count = 0;
+  for (let r = data.length - 1; r >= 1; r--) {
+    if (match(data[r][col])) {
+      sheet.deleteRow(r + 1);
+      count++;
+    }
+  }
+  return count;
+}
