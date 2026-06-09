@@ -146,6 +146,49 @@ function mergeIngredients() {
   return result;
 }
 
+// ---------------------------------------------------------------------------
+// ONE-TIME maintenance (09/06/2026, batch 2): 3 more merges + 1 full removal.
+// Run from the editor: select fixIngredients2 → Run.
+// ---------------------------------------------------------------------------
+function fixIngredients2() {
+  const MERGES = {   // dup id -> keeper id
+    i41: 'i4',       // dressing -> aioli
+    i69: 'i186',     // vegetable broth -> liquid stock
+    i115: 'i80',     // ginger -> ginger paste
+  };
+  const REMOVE = ['i112']; // chicken burger patty — delete it AND its recipe lines
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ri = ss.getSheetByName('RecipeIngredients');
+  const riVals = ri.getDataRange().getValues();
+  const riHead = riVals[0];
+  const ingCol = riHead.indexOf('ingredient_id');
+  const recCol = riHead.indexOf('recipe_id');
+
+  // Repoint merges in-memory, write back.
+  for (let r = 1; r < riVals.length; r++) {
+    const cur = String(riVals[r][ingCol]);
+    if (MERGES[cur]) riVals[r][ingCol] = MERGES[cur];
+  }
+  ri.getRange(1, 1, riVals.length, riHead.length).setValues(riVals);
+
+  // Single bottom-up pass: drop REMOVE lines, then collapse duplicate lines.
+  let linesRemoved = 0, dupesRemoved = 0;
+  const seen = {};
+  for (let r = riVals.length - 1; r >= 1; r--) {
+    const ingId = String(riVals[r][ingCol]);
+    if (REMOVE.indexOf(ingId) !== -1) { ri.deleteRow(r + 1); linesRemoved++; continue; }
+    const key = String(riVals[r][recCol]) + '|' + ingId;
+    if (seen[key]) { ri.deleteRow(r + 1); dupesRemoved++; } else seen[key] = true;
+  }
+
+  // Delete merged-away + removed ingredient rows.
+  const goneIds = Object.keys(MERGES).concat(REMOVE);
+  const ingredientsRemoved = deleteRowsWhere(ss, 'Ingredients', 'id', (v) => goneIds.indexOf(String(v)) !== -1);
+
+  Logger.log('fix2 done ' + JSON.stringify({ ingredientsRemoved, recipeLinesRemoved: linesRemoved, dupeLinesCollapsed: dupesRemoved }));
+}
+
 // Delete every data row in a tab whose value in `colName` passes `match`.
 // Walks bottom-up so row indices don't shift during deletion.
 function deleteRowsWhere(ss, tabName, colName, match) {
